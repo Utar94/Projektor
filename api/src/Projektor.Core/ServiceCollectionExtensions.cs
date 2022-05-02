@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using MediatR;
+using Microsoft.Extensions.DependencyInjection;
+using System.Reflection;
 
 namespace Projektor.Core
 {
@@ -6,7 +8,11 @@ namespace Projektor.Core
   {
     public static IServiceCollection AddProjektorCore(this IServiceCollection services)
     {
-      return services;
+      var assembly = Assembly.GetExecutingAssembly();
+
+      return services
+        .AddAutoMapper(assembly)
+        .AddMediatR(assembly);
     }
   }
 }

@@ -1,6 +1,7 @@
 ﻿#nullable disable
 using Logitar.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Projektor.Core.Projects;
 using System.Reflection;
 
 namespace Projektor.Infrastructure
@@ -10,6 +11,8 @@ namespace Projektor.Infrastructure
     public ProjektorDbContext(DbContextOptions<ProjektorDbContext> options) : base(options)
     {
     }
+
+    public DbSet<Project> Projects { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
