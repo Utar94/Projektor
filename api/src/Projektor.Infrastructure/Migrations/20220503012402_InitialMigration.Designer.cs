@@ -12,8 +12,8 @@ using Projektor.Infrastructure;
 namespace Projektor.Infrastructure.Migrations
 {
     [DbContext(typeof(ProjektorDbContext))]
-    [Migration("20220502220631_CreateProjectTable")]
-    partial class CreateProjectTable
+    [Migration("20220503012402_InitialMigration")]
+    partial class InitialMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -281,18 +281,13 @@ namespace Projektor.Infrastructure.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("Projektor.Core.Projects.Project", b =>
+            modelBuilder.Entity("Projektor.Core.Issues.IssueType", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Alias")
-                        .IsRequired()
-                        .HasMaxLength(12)
-                        .HasColumnType("character varying(12)");
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
@@ -316,10 +311,84 @@ namespace Projektor.Infrastructure.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
-                    b.Property<Guid>("Key")
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int>("ProjectId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UpdatedById")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("Uuid")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasDefaultValueSql("uuid_generate_v4()");
+
+                    b.Property<int>("Version")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedById");
+
+                    b.HasIndex("Deleted");
+
+                    b.HasIndex("DeletedById");
+
+                    b.HasIndex("Name");
+
+                    b.HasIndex("ProjectId");
+
+                    b.HasIndex("UpdatedById");
+
+                    b.HasIndex("Uuid")
+                        .IsUnique();
+
+                    b.ToTable("IssueTypes");
+                });
+
+            modelBuilder.Entity("Projektor.Core.Projects.Project", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<Guid>("CreatedById")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("Deleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("DeletedById")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasMaxLength(12)
+                        .HasColumnType("character varying(12)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -332,15 +401,17 @@ namespace Projektor.Infrastructure.Migrations
                     b.Property<Guid?>("UpdatedById")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid>("Uuid")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasDefaultValueSql("uuid_generate_v4()");
+
                     b.Property<int>("Version")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
                         .HasDefaultValue(0);
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Alias")
-                        .IsUnique();
 
                     b.HasIndex("CreatedById");
 
@@ -354,6 +425,9 @@ namespace Projektor.Infrastructure.Migrations
                     b.HasIndex("Name");
 
                     b.HasIndex("UpdatedById");
+
+                    b.HasIndex("Uuid")
+                        .IsUnique();
 
                     b.ToTable("Projects");
                 });
@@ -420,9 +494,25 @@ namespace Projektor.Infrastructure.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Projektor.Core.Issues.IssueType", b =>
+                {
+                    b.HasOne("Projektor.Core.Projects.Project", "Project")
+                        .WithMany("IssueTypes")
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Project");
+                });
+
             modelBuilder.Entity("Logitar.Identity.Core.User", b =>
                 {
                     b.Navigation("Sessions");
+                });
+
+            modelBuilder.Entity("Projektor.Core.Projects.Project", b =>
+                {
+                    b.Navigation("IssueTypes");
                 });
 #pragma warning restore 612, 618
         }

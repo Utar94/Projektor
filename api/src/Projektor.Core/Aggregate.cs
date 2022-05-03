@@ -8,7 +8,7 @@
       {
         CreatedAt = DateTime.UtcNow;
         CreatedById = userId.Value;
-        Key = Guid.NewGuid();
+        Uuid = Guid.NewGuid();
       }
     }
 
@@ -18,9 +18,9 @@
     public DateTime? DeletedAt { get; set; }
     public Guid? DeletedById { get; set; }
     public int Id { get; set; }
-    public Guid Key { get; set; }
     public DateTime? UpdatedAt { get; set; }
     public Guid? UpdatedById { get; set; }
+    public Guid Uuid { get; set; }
     public int Version { get; set; }
 
     public void Delete(Guid userId)

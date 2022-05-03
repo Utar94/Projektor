@@ -33,13 +33,13 @@ namespace Projektor.Web.Controllers
       CancellationToken cancellationToken
     )
     {
-      string alias = payload.Alias.ToLowerInvariant();
-      if (await _dbContext.Projects.SingleOrDefaultAsync(x => x.Alias == alias, cancellationToken) != null)
+      string key = payload.Key.ToLowerInvariant();
+      if (await _dbContext.Projects.SingleOrDefaultAsync(x => x.Key == key, cancellationToken) != null)
       {
-        return Conflict(new { field = nameof(payload.Alias) });
+        return Conflict(new { field = nameof(payload.Key) });
       }
 
-      var project = new Project(alias, _userContext.Id)
+      var project = new Project(key, _userContext.Id)
       {
         Description = payload.Description?.CleanTrim(),
         Name = payload.Name.Trim()
@@ -75,7 +75,7 @@ namespace Projektor.Web.Controllers
       }
       if (search != null)
       {
-        query = query.Where(x => x.Alias.Contains(search) || x.Name.Contains(search));
+        query = query.Where(x => x.Key.Contains(search) || x.Name.Contains(search));
       }
 
       long total = await query.LongCountAsync(cancellationToken);
@@ -84,7 +84,7 @@ namespace Projektor.Web.Controllers
       {
         query = sort.Value switch
         {
-          ProjectSort.Alias => desc ? query.OrderByDescending(x => x.Alias) : query.OrderBy(x => x.Alias),
+          ProjectSort.Key => desc ? query.OrderByDescending(x => x.Key) : query.OrderBy(x => x.Key),
           ProjectSort.Name => desc ? query.OrderByDescending(x => x.Name) : query.OrderBy(x => x.Name),
           ProjectSort.UpdatedAt => desc ? query.OrderByDescending(x => x.UpdatedAt ?? x.CreatedAt) : query.OrderBy(x => x.UpdatedAt ?? x.CreatedAt),
           _ => throw new ArgumentException($"The sort \"{sort}\" is not valid.", nameof(sort)),
@@ -113,7 +113,7 @@ namespace Projektor.Web.Controllers
     {
       Project? project = await _dbContext.Projects
         .AsNoTracking()
-        .SingleOrDefaultAsync(x => x.Key == id, cancellationToken);
+        .SingleOrDefaultAsync(x => x.Uuid == id, cancellationToken);
 
       if (project == null)
       {
@@ -134,7 +134,7 @@ namespace Projektor.Web.Controllers
       CancellationToken cancellationToken
     )
     {
-      Project? project = await _dbContext.Projects.SingleOrDefaultAsync(x => x.Key == id, cancellationToken);
+      Project? project = await _dbContext.Projects.SingleOrDefaultAsync(x => x.Uuid == id, cancellationToken);
       if (project == null)
       {
         return NotFound();

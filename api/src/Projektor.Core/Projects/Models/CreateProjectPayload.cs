@@ -7,7 +7,7 @@ namespace Projektor.Core.Projects.Models
   {
     [Required]
     [StringLength(12)]
-    [Alias]
-    public string Alias { get; set; } = string.Empty;
+    [ProjectKey]
+    public string Key { get; set; } = string.Empty;
   }
 }

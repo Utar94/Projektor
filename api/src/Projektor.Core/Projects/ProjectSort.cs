@@ -4,6 +4,6 @@
   {
     UpdatedAt = 0,
     Name = 1,
-    Alias = 2
+    Key = 2
   }
 }
