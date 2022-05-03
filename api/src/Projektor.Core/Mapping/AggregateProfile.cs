@@ -8,7 +8,7 @@ namespace Projektor.Core.Mapping
     public AggregateProfile()
     {
       CreateMap<Aggregate, AggregateModel>()
-        .ForMember(x => x.Id, x => x.MapFrom(y => y.Key));
+        .ForMember(x => x.Id, x => x.MapFrom(y => y.Uuid));
     }
   }
 }

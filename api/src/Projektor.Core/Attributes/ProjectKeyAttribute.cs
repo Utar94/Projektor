@@ -2,7 +2,7 @@
 
 namespace Projektor.Core.Attributes
 {
-  internal class AliasAttribute : ValidationAttribute
+  internal class ProjectKeyAttribute : ValidationAttribute
   {
     public override bool IsValid(object? value)
     {
@@ -11,7 +11,7 @@ namespace Projektor.Core.Attributes
         return true;
       }
 
-      return value is string alias && alias.All(c => char.IsLetterOrDigit(c));
+      return value is string key && key.All(c => char.IsLetterOrDigit(c));
     }
   }
 }

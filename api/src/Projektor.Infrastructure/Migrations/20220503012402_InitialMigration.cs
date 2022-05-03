@@ -6,7 +6,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace Projektor.Infrastructure.Migrations
 {
-    public partial class IdentityMigration : Migration
+    public partial class InitialMigration : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -55,6 +55,30 @@ namespace Projektor.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AspNetUsers", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Projects",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Description = table.Column<string>(type: "text", nullable: true),
+                    Key = table.Column<string>(type: "character varying(12)", maxLength: 12, nullable: false),
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "now()"),
+                    CreatedById = table.Column<Guid>(type: "uuid", nullable: false),
+                    Deleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    DeletedById = table.Column<Guid>(type: "uuid", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedById = table.Column<Guid>(type: "uuid", nullable: true),
+                    Uuid = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "uuid_generate_v4()"),
+                    Version = table.Column<int>(type: "integer", nullable: false, defaultValue: 0)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Projects", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -186,6 +210,36 @@ namespace Projektor.Infrastructure.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "IssueTypes",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Description = table.Column<string>(type: "text", nullable: true),
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    ProjectId = table.Column<int>(type: "integer", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "now()"),
+                    CreatedById = table.Column<Guid>(type: "uuid", nullable: false),
+                    Deleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    DeletedById = table.Column<Guid>(type: "uuid", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    UpdatedById = table.Column<Guid>(type: "uuid", nullable: true),
+                    Uuid = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "uuid_generate_v4()"),
+                    Version = table.Column<int>(type: "integer", nullable: false, defaultValue: 0)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_IssueTypes", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_IssueTypes_Projects_ProjectId",
+                        column: x => x.ProjectId,
+                        principalTable: "Projects",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -224,6 +278,79 @@ namespace Projektor.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_IssueTypes_CreatedById",
+                table: "IssueTypes",
+                column: "CreatedById");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_IssueTypes_Deleted",
+                table: "IssueTypes",
+                column: "Deleted");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_IssueTypes_DeletedById",
+                table: "IssueTypes",
+                column: "DeletedById");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_IssueTypes_Name",
+                table: "IssueTypes",
+                column: "Name");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_IssueTypes_ProjectId",
+                table: "IssueTypes",
+                column: "ProjectId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_IssueTypes_UpdatedById",
+                table: "IssueTypes",
+                column: "UpdatedById");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_IssueTypes_Uuid",
+                table: "IssueTypes",
+                column: "Uuid",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Projects_CreatedById",
+                table: "Projects",
+                column: "CreatedById");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Projects_Deleted",
+                table: "Projects",
+                column: "Deleted");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Projects_DeletedById",
+                table: "Projects",
+                column: "DeletedById");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Projects_Key",
+                table: "Projects",
+                column: "Key",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Projects_Name",
+                table: "Projects",
+                column: "Name");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Projects_UpdatedById",
+                table: "Projects",
+                column: "UpdatedById");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Projects_Uuid",
+                table: "Projects",
+                column: "Uuid",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Sessions_Guid",
                 table: "Sessions",
                 column: "Guid",
@@ -253,10 +380,16 @@ namespace Projektor.Infrastructure.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
+                name: "IssueTypes");
+
+            migrationBuilder.DropTable(
                 name: "Sessions");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
+
+            migrationBuilder.DropTable(
+                name: "Projects");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
