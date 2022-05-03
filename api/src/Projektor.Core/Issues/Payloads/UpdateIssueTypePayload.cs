@@ -1,4 +1,4 @@
-﻿namespace Projektor.Core.Issues.Models
+﻿namespace Projektor.Core.Issues.Payloads
 {
   public class UpdateIssueTypePayload : SaveIssueTypePayload
   {

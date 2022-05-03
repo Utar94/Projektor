@@ -1,4 +1,4 @@
-﻿namespace Projektor.Core.Projects.Models
+﻿namespace Projektor.Core.Projects.Payloads
 {
   public class UpdateProjectPayload : SaveProjectPayload
   {

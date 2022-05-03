@@ -13,6 +13,7 @@ namespace Projektor.Infrastructure
     {
     }
 
+    public DbSet<Issue> Issues { get; set; }
     public DbSet<IssueType> IssueTypes { get; set; }
     public DbSet<Project> Projects { get; set; }
 

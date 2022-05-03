@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Projektor.Core.Models;
 using Projektor.Core.Projects;
 using Projektor.Core.Projects.Models;
+using Projektor.Core.Projects.Payloads;
 using Projektor.Infrastructure;
 
 namespace Projektor.Web.Controllers
@@ -84,7 +85,6 @@ namespace Projektor.Web.Controllers
       {
         query = sort.Value switch
         {
-          ProjectSort.Key => desc ? query.OrderByDescending(x => x.Key) : query.OrderBy(x => x.Key),
           ProjectSort.Name => desc ? query.OrderByDescending(x => x.Name) : query.OrderBy(x => x.Name),
           ProjectSort.UpdatedAt => desc ? query.OrderByDescending(x => x.UpdatedAt ?? x.CreatedAt) : query.OrderBy(x => x.UpdatedAt ?? x.CreatedAt),
           _ => throw new ArgumentException($"The sort \"{sort}\" is not valid.", nameof(sort)),

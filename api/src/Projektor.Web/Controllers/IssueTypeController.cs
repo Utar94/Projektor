@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Projektor.Core.Issues;
 using Projektor.Core.Issues.Models;
+using Projektor.Core.Issues.Payloads;
 using Projektor.Core.Models;
 using Projektor.Core.Projects;
 using Projektor.Infrastructure;
