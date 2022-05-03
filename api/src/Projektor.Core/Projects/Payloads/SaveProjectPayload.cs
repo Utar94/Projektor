@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Projektor.Core.Issues.Models
+namespace Projektor.Core.Projects.Payloads
 {
-  public abstract class SaveIssueTypePayload
+  public abstract class SaveProjectPayload
   {
     public string? Description { get; set; }
 
