@@ -114,6 +114,7 @@ namespace Projektor.Web.Controllers
         query = sort.Value switch
         {
           IssueTypeSort.Name => desc ? query.OrderByDescending(x => x.Name) : query.OrderBy(x => x.Name),
+          IssueTypeSort.Project => desc ? query.OrderByDescending(x => x.Project!.Name) : query.OrderBy(x => x.Project!.Name),
           IssueTypeSort.UpdatedAt => desc ? query.OrderByDescending(x => x.UpdatedAt ?? x.CreatedAt) : query.OrderBy(x => x.UpdatedAt ?? x.CreatedAt),
           _ => throw new ArgumentException($"The sort \"{sort}\" is not valid.", nameof(sort)),
         };
@@ -141,6 +142,7 @@ namespace Projektor.Web.Controllers
     {
       IssueType? issueType = await _dbContext.IssueTypes
         .AsNoTracking()
+        .Include(x => x.Project)
         .SingleOrDefaultAsync(x => x.Uuid == id, cancellationToken);
 
       if (issueType == null)
@@ -162,7 +164,9 @@ namespace Projektor.Web.Controllers
       CancellationToken cancellationToken
     )
     {
-      IssueType? issueType = await _dbContext.IssueTypes.SingleOrDefaultAsync(x => x.Uuid == id, cancellationToken);
+      IssueType? issueType = await _dbContext.IssueTypes
+        .Include(x => x.Project)
+        .SingleOrDefaultAsync(x => x.Uuid == id, cancellationToken);
       if (issueType == null)
       {
         return NotFound();

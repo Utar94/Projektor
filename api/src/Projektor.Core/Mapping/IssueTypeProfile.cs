@@ -10,16 +10,7 @@ namespace Projektor.Core.Mapping
     public IssueTypeProfile()
     {
       CreateMap<IssueType, IssueTypeModel>()
-        .IncludeBase<Aggregate, AggregateModel>()
-        .ForMember(x => x.ProjectId, x => x.MapFrom(GetProjectId));
-    }
-
-    private static Guid GetProjectId(IssueType issueType, IssueTypeModel model)
-    {
-      ArgumentNullException.ThrowIfNull(issueType);
-
-      return issueType.Project?.Uuid
-        ?? throw new ArgumentException($"The {nameof(issueType.Project)} is required.", nameof(issueType));
+        .IncludeBase<Aggregate, AggregateModel>();
     }
   }
 }

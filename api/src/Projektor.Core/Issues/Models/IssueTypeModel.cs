@@ -1,4 +1,5 @@
 ﻿using Projektor.Core.Models;
+using Projektor.Core.Projects.Models;
 
 namespace Projektor.Core.Issues.Models
 {
@@ -6,6 +7,6 @@ namespace Projektor.Core.Issues.Models
   {
     public string? Description { get; set; }
     public string Name { get; set; } = string.Empty;
-    public Guid ProjectId { get; set; }
+    public ProjectModel? Project { get; set; }
   }
 }
