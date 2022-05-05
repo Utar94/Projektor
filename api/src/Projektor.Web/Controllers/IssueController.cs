@@ -145,7 +145,11 @@ namespace Projektor.Web.Controllers
       {
         query = sort.Value switch
         {
+          IssueSort.Key => desc
+            ? query.OrderByDescending(x => x.Project!.Key).ThenByDescending(x => x.Number)
+            : query.OrderBy(x => x.Project!.Key).ThenBy(x => x.Number),
           IssueSort.Name => desc ? query.OrderByDescending(x => x.Name) : query.OrderBy(x => x.Name),
+          IssueSort.Type => desc ? query.OrderByDescending(x => x.Type!.Name) : query.OrderBy(x => x.Type!.Name),
           IssueSort.UpdatedAt => desc ? query.OrderByDescending(x => x.UpdatedAt ?? x.CreatedAt) : query.OrderBy(x => x.UpdatedAt ?? x.CreatedAt),
           _ => throw new ArgumentException($"The sort \"{sort}\" is not valid.", nameof(sort)),
         };
@@ -169,13 +173,31 @@ namespace Projektor.Web.Controllers
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<IssueModel>> GetAsync(Guid id, CancellationToken cancellationToken)
+    public async Task<ActionResult<IssueModel>> GetAsync(string id, CancellationToken cancellationToken)
     {
-      Issue? issue = await _dbContext.Issues
+      IQueryable<Issue> query = _dbContext.Issues
         .AsNoTracking()
         .Include(x => x.Project)
-        .Include(x => x.Type)
-        .SingleOrDefaultAsync(x => x.Uuid == id, cancellationToken);
+        .Include(x => x.Type);
+
+      Issue? issue;
+      if (Guid.TryParse(id, out Guid uuid))
+      {
+        issue = await query.SingleOrDefaultAsync(x => x.Uuid == uuid, cancellationToken);
+      }
+      else
+      {
+        string[] values = id.Split('-');
+        if (values.Length != 2 || !int.TryParse(values[1], out int number))
+        {
+          return BadRequest(new { code = "invalid_key" });
+        }
+
+        issue = await query.SingleOrDefaultAsync(x
+          => x.Project != null && x.Project.Key == values[0].ToLowerInvariant()
+          && x.Number == number, cancellationToken
+        );
+      }
 
       if (issue == null)
       {

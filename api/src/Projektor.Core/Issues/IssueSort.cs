@@ -3,6 +3,8 @@
   public enum IssueSort
   {
     UpdatedAt = 0,
-    Name = 1
+    Name = 1,
+    Type = 2,
+    Key = 3
   }
 }

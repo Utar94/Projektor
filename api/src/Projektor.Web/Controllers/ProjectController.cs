@@ -85,6 +85,7 @@ namespace Projektor.Web.Controllers
       {
         query = sort.Value switch
         {
+          ProjectSort.Key => desc ? query.OrderByDescending(x => x.Key) : query.OrderBy(x => x.Key),
           ProjectSort.Name => desc ? query.OrderByDescending(x => x.Name) : query.OrderBy(x => x.Name),
           ProjectSort.UpdatedAt => desc ? query.OrderByDescending(x => x.UpdatedAt ?? x.CreatedAt) : query.OrderBy(x => x.UpdatedAt ?? x.CreatedAt),
           _ => throw new ArgumentException($"The sort \"{sort}\" is not valid.", nameof(sort)),
@@ -109,11 +110,12 @@ namespace Projektor.Web.Controllers
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<ProjectModel>> GetAsync(Guid id, CancellationToken cancellationToken)
+    public async Task<ActionResult<ProjectModel>> GetAsync(string id, CancellationToken cancellationToken)
     {
-      Project? project = await _dbContext.Projects
-        .AsNoTracking()
-        .SingleOrDefaultAsync(x => x.Uuid == id, cancellationToken);
+      IQueryable<Project> query = _dbContext.Projects.AsNoTracking();
+      Project? project = Guid.TryParse(id, out Guid uuid)
+        ? await query.SingleOrDefaultAsync(x => x.Uuid == uuid, cancellationToken)
+        : await query.SingleOrDefaultAsync(x => x.Key == id.ToLowerInvariant(), cancellationToken);
 
       if (project == null)
       {
