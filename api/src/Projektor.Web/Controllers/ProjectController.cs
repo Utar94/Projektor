@@ -1,14 +1,12 @@
-﻿using AutoMapper;
-using Logitar;
-using Logitar.Identity.Core;
+﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Projektor.Core.Models;
 using Projektor.Core.Projects;
+using Projektor.Core.Projects.Commands;
 using Projektor.Core.Projects.Models;
 using Projektor.Core.Projects.Payloads;
-using Projektor.Infrastructure;
+using Projektor.Core.Projects.Queries;
 
 namespace Projektor.Web.Controllers
 {
@@ -17,15 +15,11 @@ namespace Projektor.Web.Controllers
   [Route("projects")]
   public class ProjectController : ControllerBase
   {
-    private readonly ProjektorDbContext _dbContext;
-    private readonly IMapper _mapper;
-    private readonly IUserContext _userContext;
+    private readonly IMediator _mediator;
 
-    public ProjectController(ProjektorDbContext dbContext, IMapper mapper, IUserContext userContext)
+    public ProjectController(IMediator mediator)
     {
-      _dbContext = dbContext;
-      _mapper = mapper;
-      _userContext = userContext;
+      _mediator = mediator;
     }
 
     [HttpPost]
@@ -34,22 +28,7 @@ namespace Projektor.Web.Controllers
       CancellationToken cancellationToken
     )
     {
-      string key = payload.Key.ToLowerInvariant();
-      if (await _dbContext.Projects.SingleOrDefaultAsync(x => x.Key == key, cancellationToken) != null)
-      {
-        return Conflict(new { field = nameof(payload.Key) });
-      }
-
-      var project = new Project(key, _userContext.Id)
-      {
-        Description = payload.Description?.CleanTrim(),
-        Name = payload.Name.Trim()
-      };
-
-      _dbContext.Projects.Add(project);
-      await _dbContext.SaveChangesAsync(cancellationToken);
-
-      var model = _mapper.Map<ProjectModel>(project);
+      ProjectModel model = await _mediator.Send(new CreateProjectCommand(payload), cancellationToken);
       var uri = new Uri($"/projects/{model.Id}", UriKind.Relative);
 
       return Created(uri, model);
@@ -66,67 +45,21 @@ namespace Projektor.Web.Controllers
       CancellationToken cancellationToken
     )
     {
-      IQueryable<Project> query = _dbContext.Projects
-        .AsNoTracking()
-        .Where(x => x.CreatedById == _userContext.Id);
-
-      if (deleted.HasValue)
+      return Ok(await _mediator.Send(new GetProjectsQuery
       {
-        query = query.Where(x => x.Deleted == deleted);
-      }
-      if (search != null)
-      {
-        query = query.Where(x => x.Key.Contains(search) || x.Name.Contains(search));
-      }
-
-      long total = await query.LongCountAsync(cancellationToken);
-
-      if (sort.HasValue)
-      {
-        query = sort.Value switch
-        {
-          ProjectSort.Key => desc ? query.OrderByDescending(x => x.Key) : query.OrderBy(x => x.Key),
-          ProjectSort.Name => desc ? query.OrderByDescending(x => x.Name) : query.OrderBy(x => x.Name),
-          ProjectSort.UpdatedAt => desc ? query.OrderByDescending(x => x.UpdatedAt ?? x.CreatedAt) : query.OrderBy(x => x.UpdatedAt ?? x.CreatedAt),
-          _ => throw new ArgumentException($"The sort \"{sort}\" is not valid.", nameof(sort)),
-        };
-      }
-
-      if (index.HasValue)
-      {
-        query = query.Skip(index.Value);
-      }
-      if (count.HasValue)
-      {
-        query = query.Take(count.Value);
-      }
-
-      Project[] projects = await query.ToArrayAsync(cancellationToken);
-
-      return Ok(new ListModel<ProjectModel>(
-        _mapper.Map<IEnumerable<ProjectModel>>(projects),
-        total
-      ));
+        Deleted = deleted,
+        Search = search,
+        Sort = sort,
+        Desc = desc,
+        Index = index,
+        Count = count
+      }, cancellationToken));
     }
 
     [HttpGet("{id}")]
     public async Task<ActionResult<ProjectModel>> GetAsync(string id, CancellationToken cancellationToken)
     {
-      IQueryable<Project> query = _dbContext.Projects.AsNoTracking();
-      Project? project = Guid.TryParse(id, out Guid uuid)
-        ? await query.SingleOrDefaultAsync(x => x.Uuid == uuid, cancellationToken)
-        : await query.SingleOrDefaultAsync(x => x.Key == id.ToLowerInvariant(), cancellationToken);
-
-      if (project == null)
-      {
-        return NotFound();
-      }
-      else if (project.CreatedById != _userContext.Id)
-      {
-        return Forbid();
-      }
-
-      return Ok(_mapper.Map<ProjectModel>(project));
+      return Ok(await _mediator.Send(new GetProjectQuery(id), cancellationToken));
     }
 
     [HttpPut("{id}")]
@@ -136,23 +69,7 @@ namespace Projektor.Web.Controllers
       CancellationToken cancellationToken
     )
     {
-      Project? project = await _dbContext.Projects.SingleOrDefaultAsync(x => x.Uuid == id, cancellationToken);
-      if (project == null)
-      {
-        return NotFound();
-      }
-      else if (project.CreatedById != _userContext.Id)
-      {
-        return Forbid();
-      }
-
-      project.Description = payload.Description?.CleanTrim();
-      project.Name = payload.Name.Trim();
-      project.Update(_userContext.Id);
-
-      await _dbContext.SaveChangesAsync(cancellationToken);
-
-      return Ok(_mapper.Map<ProjectModel>(project));
+      return Ok(await _mediator.Send(new UpdateProjectCommand(id, payload), cancellationToken));
     }
   }
 }

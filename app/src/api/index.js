@@ -14,6 +14,7 @@ async function executeWithRenew(method, url, data = null) {
       if (refresh_token) {
         token = (await execute('POST', '/identity/renew', { refresh_token })).data
         store.dispatch('signIn', token)
+        // TODO(fpion): update token in localStorage if already present, fix the template
         return await execute(method, url, data, token)
       }
     }

@@ -1,15 +1,12 @@
-﻿using AutoMapper;
-using Logitar;
-using Logitar.Identity.Core;
+﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Projektor.Core.Issues;
+using Projektor.Core.Issues.Commands;
 using Projektor.Core.Issues.Models;
 using Projektor.Core.Issues.Payloads;
+using Projektor.Core.Issues.Queries;
 using Projektor.Core.Models;
-using Projektor.Core.Projects;
-using Projektor.Infrastructure;
 
 namespace Projektor.Web.Controllers
 {
@@ -18,15 +15,11 @@ namespace Projektor.Web.Controllers
   [Route("issues/types")]
   public class IssueTypeController : ControllerBase
   {
-    private readonly ProjektorDbContext _dbContext;
-    private readonly IMapper _mapper;
-    private readonly IUserContext _userContext;
+    private readonly IMediator _mediator;
 
-    public IssueTypeController(ProjektorDbContext dbContext, IMapper mapper, IUserContext userContext)
+    public IssueTypeController(IMediator mediator)
     {
-      _dbContext = dbContext;
-      _mapper = mapper;
-      _userContext = userContext;
+      _mediator = mediator;
     }
 
     [HttpPost]
@@ -35,26 +28,7 @@ namespace Projektor.Web.Controllers
       CancellationToken cancellationToken
     )
     {
-      Project? project = await _dbContext.Projects.SingleOrDefaultAsync(x => x.Uuid == payload.ProjectId, cancellationToken);
-      if (project == null)
-      {
-        return NotFound(new { field = nameof(payload.ProjectId) });
-      }
-      else if (project.CreatedById != _userContext.Id)
-      {
-        return Forbid();
-      }
-
-      var issueType = new IssueType(project, _userContext.Id)
-      {
-        Description = payload.Description?.CleanTrim(),
-        Name = payload.Name.Trim()
-      };
-
-      _dbContext.IssueTypes.Add(issueType);
-      await _dbContext.SaveChangesAsync(cancellationToken);
-
-      var model = _mapper.Map<IssueTypeModel>(issueType);
+      IssueTypeModel model = await _mediator.Send(new CreateIssueTypeCommand(payload), cancellationToken);
       var uri = new Uri($"/issues/types/{model.Id}", UriKind.Relative);
 
       return Created(uri, model);
@@ -72,89 +46,22 @@ namespace Projektor.Web.Controllers
       CancellationToken cancellationToken
     )
     {
-      Project? project = null;
-      if (projectId.HasValue)
+      return Ok(await _mediator.Send(new GetIssueTypesQuery
       {
-        project = await _dbContext.Projects
-          .AsNoTracking()
-          .SingleOrDefaultAsync(x => x.Uuid == projectId.Value, cancellationToken);
-
-        if (project == null)
-        {
-          return NotFound(new { field = nameof(projectId) });
-        }
-        else if (project.CreatedById != _userContext.Id)
-        {
-          return Forbid();
-        }
-      }
-
-      IQueryable<IssueType> query = _dbContext.IssueTypes
-        .AsNoTracking()
-        .Include(x => x.Project)
-        .Where(x => x.CreatedById == _userContext.Id);
-
-      if (deleted.HasValue)
-      {
-        query = query.Where(x => x.Deleted == deleted);
-      }
-      if (project != null)
-      {
-        query = query.Where(x => x.Project != null && x.Project.Id == project.Id);
-      }
-      if (search != null)
-      {
-        query = query.Where(x => x.Name.Contains(search));
-      }
-
-      long total = await query.LongCountAsync(cancellationToken);
-
-      if (sort.HasValue)
-      {
-        query = sort.Value switch
-        {
-          IssueTypeSort.Name => desc ? query.OrderByDescending(x => x.Name) : query.OrderBy(x => x.Name),
-          IssueTypeSort.Project => desc ? query.OrderByDescending(x => x.Project!.Name) : query.OrderBy(x => x.Project!.Name),
-          IssueTypeSort.UpdatedAt => desc ? query.OrderByDescending(x => x.UpdatedAt ?? x.CreatedAt) : query.OrderBy(x => x.UpdatedAt ?? x.CreatedAt),
-          _ => throw new ArgumentException($"The sort \"{sort}\" is not valid.", nameof(sort)),
-        };
-      }
-
-      if (index.HasValue)
-      {
-        query = query.Skip(index.Value);
-      }
-      if (count.HasValue)
-      {
-        query = query.Take(count.Value);
-      }
-
-      IssueType[] issueTypes = await query.ToArrayAsync(cancellationToken);
-
-      return Ok(new ListModel<IssueTypeModel>(
-        _mapper.Map<IEnumerable<IssueTypeModel>>(issueTypes),
-        total
-      ));
+        Deleted = deleted,
+        ProjectId = projectId,
+        Search = search,
+        Sort = sort,
+        Desc = desc,
+        Index = index,
+        Count = count
+      }, cancellationToken));
     }
 
     [HttpGet("{id}")]
     public async Task<ActionResult<IssueTypeModel>> GetAsync(Guid id, CancellationToken cancellationToken)
     {
-      IssueType? issueType = await _dbContext.IssueTypes
-        .AsNoTracking()
-        .Include(x => x.Project)
-        .SingleOrDefaultAsync(x => x.Uuid == id, cancellationToken);
-
-      if (issueType == null)
-      {
-        return NotFound();
-      }
-      else if (issueType.CreatedById != _userContext.Id)
-      {
-        return Forbid();
-      }
-
-      return Ok(_mapper.Map<IssueTypeModel>(issueType));
+      return Ok(await _mediator.Send(new GetIssueTypeQuery(id), cancellationToken));
     }
 
     [HttpPut("{id}")]
@@ -164,25 +71,7 @@ namespace Projektor.Web.Controllers
       CancellationToken cancellationToken
     )
     {
-      IssueType? issueType = await _dbContext.IssueTypes
-        .Include(x => x.Project)
-        .SingleOrDefaultAsync(x => x.Uuid == id, cancellationToken);
-      if (issueType == null)
-      {
-        return NotFound();
-      }
-      else if (issueType.CreatedById != _userContext.Id)
-      {
-        return Forbid();
-      }
-
-      issueType.Description = payload.Description?.CleanTrim();
-      issueType.Name = payload.Name.Trim();
-      issueType.Update(_userContext.Id);
-
-      await _dbContext.SaveChangesAsync(cancellationToken);
-
-      return Ok(_mapper.Map<IssueTypeModel>(issueType));
+      return Ok(await _mediator.Send(new UpdateIssueTypeCommand(id, payload), cancellationToken));
     }
   }
 }

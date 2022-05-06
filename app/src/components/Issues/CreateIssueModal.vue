@@ -3,7 +3,7 @@
     <validation-observer ref="form">
       <b-form @submit.prevent="submit">
         <project-select required v-model="projectId" />
-        <issue-type-select v-if="projectId" :projectId="projectId" required v-model="typeId" />
+        <issue-type-select :projectId="projectId" required v-model="typeId" />
         <form-field id="name" label="name.label" :maxLength="100" placeholder="name.placeholder" required v-model="name" />
       </b-form>
     </validation-observer>
