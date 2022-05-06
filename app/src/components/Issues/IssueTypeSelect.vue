@@ -1,5 +1,14 @@
 <template>
-  <form-select :id="id" :label="label" :options="options" :placeholder="placeholder" :required="required" :value="value" @input="$emit('input', $event)" />
+  <form-select
+    :disabled="!projectId"
+    :id="id"
+    :label="label"
+    :options="options"
+    :placeholder="placeholder"
+    :required="required"
+    :value="value"
+    @input="$emit('input', $event)"
+  />
 </template>
 
 <script>
@@ -43,17 +52,21 @@ export default {
   watch: {
     projectId: {
       immediate: true,
-      async handler(value) {
-        if (value) {
-          try {
-            const { data } = await getIssueTypes({
-              deleted: false,
-              projectId: this.projectId,
-              sort: 'Name'
-            })
-            this.items = data.items
-          } catch (e) {
-            this.handleError(e)
+      async handler(projectId, oldValue) {
+        if (projectId !== oldValue) {
+          if (projectId) {
+            try {
+              const { data } = await getIssueTypes({
+                deleted: false,
+                projectId,
+                sort: 'Name'
+              })
+              this.items = data.items
+            } catch (e) {
+              this.handleError(e)
+            }
+          } else {
+            this.items = []
           }
         }
       }

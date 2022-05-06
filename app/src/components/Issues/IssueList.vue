@@ -9,7 +9,7 @@
     <b-row>
       <search-field class="col" v-model="search" />
       <project-select class="col" v-model="projectId" />
-      <issue-type-select v-if="projectId" class="col" :projectId="projectId" v-model="typeId" />
+      <issue-type-select class="col" :projectId="projectId" v-model="typeId" />
     </b-row>
     <b-row>
       <sort-select class="col" :desc="desc" :options="sortOptions" v-model="sort" @desc="desc = $event" />
@@ -72,7 +72,7 @@ export default {
         deleted: false,
         projectId: this.projectId,
         search: this.search,
-        typeId: this.typeId,
+        typeId: this.projectId ? this.typeId : null,
         sort: this.sort,
         desc: this.sort === null ? null : this.desc,
         index: (this.page - 1) * this.count,
@@ -118,6 +118,7 @@ export default {
       }
     },
     projectId(newValue, oldValue) {
+      // TODO(fpion): bug, changed after params has executed
       if (newValue !== oldValue) {
         this.typeId = null
       }
