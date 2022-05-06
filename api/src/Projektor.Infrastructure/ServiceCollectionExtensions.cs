@@ -18,7 +18,8 @@ namespace Projektor.Infrastructure
         })
         .AddScoped<IIssueRepository, IssueRepository>()
         .AddScoped<IIssueTypeRepository, IssueTypeRepository>()
-        .AddScoped<IProjectRepository, ProjectRepository>();
+        .AddScoped<IProjectRepository, ProjectRepository>()
+        .AddScoped<IWorklogRepository, WorklogRepository>();
     }
   }
 }

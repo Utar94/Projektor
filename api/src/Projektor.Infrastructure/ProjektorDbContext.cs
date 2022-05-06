@@ -3,6 +3,7 @@ using Logitar.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Projektor.Core.Issues;
 using Projektor.Core.Projects;
+using Projektor.Core.Worklogs;
 using System.Reflection;
 
 namespace Projektor.Infrastructure
@@ -16,6 +17,7 @@ namespace Projektor.Infrastructure
     public DbSet<Issue> Issues { get; set; }
     public DbSet<IssueType> IssueTypes { get; set; }
     public DbSet<Project> Projects { get; set; }
+    public DbSet<Worklog> Worklogs { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

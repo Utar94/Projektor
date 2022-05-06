@@ -1,4 +1,5 @@
 ﻿using Projektor.Core.Projects;
+using Projektor.Core.Worklogs;
 
 namespace Projektor.Core.Issues
 {
@@ -26,6 +27,8 @@ namespace Projektor.Core.Issues
     public double? Score { get; set; }
     public IssueType? Type { get; set; }
     public int TypeId { get; set; }
+
+    public ICollection<Worklog> Worklogs { get; set; } = new List<Worklog>();
 
     public override string ToString() => $"{Name} | {base.ToString()}";
   }
