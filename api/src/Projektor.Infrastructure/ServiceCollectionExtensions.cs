@@ -16,6 +16,7 @@ namespace Projektor.Infrastructure
           var configuration = provider.GetRequiredService<IConfiguration>();
           builder.UseNpgsql(configuration.GetConnectionString(nameof(ProjektorDbContext)));
         })
+        .AddScoped<ICommentRepository, CommentRepository>()
         .AddScoped<IIssueRepository, IssueRepository>()
         .AddScoped<IIssueTypeRepository, IssueTypeRepository>()
         .AddScoped<IProjectRepository, ProjectRepository>()

@@ -1,6 +1,7 @@
 ﻿#nullable disable
 using Logitar.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Projektor.Core.Comments;
 using Projektor.Core.Issues;
 using Projektor.Core.Projects;
 using Projektor.Core.Worklogs;
@@ -14,6 +15,7 @@ namespace Projektor.Infrastructure
     {
     }
 
+    public DbSet<Comment> Comments { get; set; }
     public DbSet<Issue> Issues { get; set; }
     public DbSet<IssueType> IssueTypes { get; set; }
     public DbSet<Project> Projects { get; set; }

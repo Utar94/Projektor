@@ -1,0 +1,67 @@
+﻿using Microsoft.EntityFrameworkCore;
+using Projektor.Core;
+using Projektor.Core.Comments;
+using Projektor.Core.Repositories;
+using Projektor.Infrastructure.Extensions;
+
+namespace Projektor.Infrastructure.Repositories
+{
+  internal class CommentRepository : RepositoryBase<Comment>, ICommentRepository
+  {
+    public CommentRepository(ProjektorDbContext dbContext) : base(dbContext)
+    {
+    }
+
+    public async Task<Comment?> GetAsync(Guid uuid, bool readOnly = false, CancellationToken cancellationToken = default)
+    {
+      return await DbContext.Comments
+        .ApplyTracking(readOnly)
+        .SingleOrDefaultAsync(x => x.Uuid == uuid, cancellationToken);
+    }
+
+    public async Task<PagedList<Comment>> GetPagedAsync(
+      Guid userId,
+      bool? deleted = null,
+      Guid? issueId = null,
+      CommentSort? sort = null,
+      bool desc = false,
+      int? index = null,
+      int? count = null,
+      bool readOnly = false,
+      CancellationToken cancellationToken = default
+    )
+    {
+      IQueryable<Comment> query = DbContext.Comments
+        .ApplyTracking(readOnly)
+        .Include(x => x.Issue)
+        .Where(x => x.CreatedById == userId);
+
+      if (deleted.HasValue)
+      {
+        query = query.Where(x => x.Deleted == deleted);
+      }
+      if (issueId.HasValue)
+      {
+        query = query.Where(x => x.Issue != null && x.Issue.Uuid == issueId.Value);
+      }
+
+      long total = await query.LongCountAsync(cancellationToken);
+
+      if (sort.HasValue)
+      {
+        query = sort.Value switch
+        {
+          CommentSort.CreatedAt => desc ? query.OrderByDescending(x => x.CreatedAt) : query.OrderBy(x => x.CreatedAt),
+          CommentSort.UpdatedAt => desc ? query.OrderByDescending(x => x.UpdatedAt ?? x.CreatedAt) : query.OrderBy(x => x.UpdatedAt ?? x.CreatedAt),
+          _ => throw new ArgumentException($"The sort \"{sort}\" is not valid.", nameof(sort)),
+        };
+      }
+
+      query = query.ApplyPaging(index, count);
+
+      Comment[] comments = await query.ToArrayAsync(cancellationToken);
+
+      return new PagedList<Comment>(comments, total);
+    }
+  }
+}
