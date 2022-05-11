@@ -43,9 +43,11 @@ namespace Projektor.Infrastructure.Repositories
 
     public async Task<PagedList<Issue>> GetPagedAsync(
       Guid userId,
+      bool? closed = null,
       bool? deleted = null,
       Priority? priority = null,
       Guid? projectId = null,
+      Resolution? resolution = null,
       string? search = null,
       Guid? typeId = null,
       IssueSort? sort = null,
@@ -62,6 +64,12 @@ namespace Projektor.Infrastructure.Repositories
         .Include(x => x.Type)
         .Where(x => x.CreatedById == userId);
 
+      if (closed.HasValue)
+      {
+        query = closed.Value
+          ? query.Where(x => x.ClosedAt.HasValue && x.ClosedById.HasValue)
+          : query.Where(x => !x.ClosedAt.HasValue && !x.ClosedById.HasValue);
+      }
       if (deleted.HasValue)
       {
         query = query.Where(x => x.Deleted == deleted);
@@ -73,6 +81,10 @@ namespace Projektor.Infrastructure.Repositories
       if (projectId.HasValue)
       {
         query = query.Where(x => x.Project != null && x.Project.Uuid == projectId.Value);
+      }
+      if (resolution.HasValue)
+      {
+        query = query.Where(x => x.Resolution == resolution.Value);
       }
       if (search != null)
       {

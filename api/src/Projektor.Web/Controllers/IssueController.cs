@@ -36,9 +36,11 @@ namespace Projektor.Web.Controllers
 
     [HttpGet]
     public async Task<ActionResult<ListModel<IssueModel>>> GetAsync(
+      bool? closed,
       bool? deleted,
       Priority? priority,
       Guid? projectId,
+      Resolution? resolution,
       string? search,
       Guid? typeId,
       IssueSort? sort,
@@ -50,9 +52,11 @@ namespace Projektor.Web.Controllers
     {
       return Ok(await _mediator.Send(new GetIssuesQuery
       {
+        Closed = closed,
         Deleted = deleted,
         Priority = priority,
         ProjectId = projectId,
+        Resolution = resolution,
         Search = search,
         TypeId = typeId,
         Sort = sort,
@@ -76,6 +80,22 @@ namespace Projektor.Web.Controllers
     )
     {
       return Ok(await _mediator.Send(new UpdateIssueCommand(id, payload), cancellationToken));
+    }
+
+    [HttpPatch("{id}/close")]
+    public async Task<ActionResult<IssueModel>> CloseIssueAsync(
+      Guid id,
+      [FromBody] CloseIssuePayload payload,
+      CancellationToken cancellationToken
+    )
+    {
+      return Ok(await _mediator.Send(new CloseIssueCommand(id, payload), cancellationToken));
+    }
+
+    [HttpPatch("{id}/reopen")]
+    public async Task<ActionResult<IssueModel>> ReopenIssueAsync(Guid id, CancellationToken cancellationToken)
+    {
+      return Ok(await _mediator.Send(new ReopenIssueCommand(id), cancellationToken));
     }
   }
 }

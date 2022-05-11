@@ -9,9 +9,11 @@ namespace Projektor.Core.Repositories
     Task<int?> GetMaximumNumberAsync(int projectId, CancellationToken cancellationToken = default);
     Task<PagedList<Issue>> GetPagedAsync(
       Guid userId,
+      bool? closed = null,
       bool? deleted = null,
       Priority? priority = null,
       Guid? projectId = null,
+      Resolution? resolution = null,
       string? search = null,
       Guid? typeId = null,
       IssueSort? sort = null,

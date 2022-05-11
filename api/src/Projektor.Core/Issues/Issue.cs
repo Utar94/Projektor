@@ -17,6 +17,8 @@ namespace Projektor.Core.Issues
     {
     }
 
+    public DateTime? ClosedAt { get; set; }
+    public Guid? ClosedById { get; set; }
     public string? Description { get; set; }
     public DateTime? DueDate { get; set; }
     public int? Estimate { get; set; }
@@ -25,11 +27,27 @@ namespace Projektor.Core.Issues
     public Priority Priority { get; set; }
     public Project? Project { get; set; }
     public int ProjectId { get; set; }
+    public Resolution Resolution { get; set; }
     public double? Score { get; set; }
     public IssueType? Type { get; set; }
     public int TypeId { get; set; }
 
+    public bool IsClosed => ClosedAt.HasValue && ClosedById.HasValue;
+
     public ICollection<Worklog> Worklogs { get; set; } = new List<Worklog>();
+
+    public void Close(Resolution resolution, Guid userId)
+    {
+      ClosedAt = DateTime.UtcNow;
+      ClosedById = userId;
+      Resolution = resolution;
+    }
+    public void Reopen()
+    {
+      ClosedAt = null;
+      ClosedById = null;
+      Resolution = Resolution.Unresolved;
+    }
 
     public override string ToString() => $"{Name} | {base.ToString()}";
   }

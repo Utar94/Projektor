@@ -28,9 +28,11 @@ namespace Projektor.Core.Issues.Queries
     {
       PagedList<Issue> issues = await _issueRepository.GetPagedAsync(
         _userContext.Id,
+        request.Closed,
         request.Deleted,
         request.Priority,
         request.ProjectId,
+        request.Resolution,
         request.Search,
         request.TypeId,
         request.Sort,

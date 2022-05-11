@@ -6,9 +6,11 @@ namespace Projektor.Core.Issues.Queries
 {
   public class GetIssuesQuery : IRequest<ListModel<IssueModel>>
   {
+    public bool? Closed { get; set; }
     public bool? Deleted { get; set; }
     public Priority? Priority { get; set; }
     public Guid? ProjectId { get; set; }
+    public Resolution? Resolution { get; set; }
     public string? Search { get; set; }
     public Guid? TypeId { get; set; }
 
