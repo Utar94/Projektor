@@ -16,6 +16,9 @@ namespace Projektor.Core.Issues.Payloads
     [StringLength(100)]
     public string Name { get; set; } = string.Empty;
 
+    [Enum(typeof(Priority))]
+    public Priority Priority { get; set; }
+
     [MinValue(0)]
     public double? Score { get; set; }
   }

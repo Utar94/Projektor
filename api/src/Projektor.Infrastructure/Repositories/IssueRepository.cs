@@ -44,6 +44,7 @@ namespace Projektor.Infrastructure.Repositories
     public async Task<PagedList<Issue>> GetPagedAsync(
       Guid userId,
       bool? deleted = null,
+      Priority? priority = null,
       Guid? projectId = null,
       string? search = null,
       Guid? typeId = null,
@@ -64,6 +65,10 @@ namespace Projektor.Infrastructure.Repositories
       if (deleted.HasValue)
       {
         query = query.Where(x => x.Deleted == deleted);
+      }
+      if (priority.HasValue)
+      {
+        query = query.Where(x => x.Priority == priority.Value);
       }
       if (projectId.HasValue)
       {
@@ -88,6 +93,7 @@ namespace Projektor.Infrastructure.Repositories
             ? query.OrderByDescending(x => x.Project!.Key).ThenByDescending(x => x.Number)
             : query.OrderBy(x => x.Project!.Key).ThenBy(x => x.Number),
           IssueSort.Name => desc ? query.OrderByDescending(x => x.Name) : query.OrderBy(x => x.Name),
+          IssueSort.Priority => desc ? query.OrderByDescending(x => x.Priority) : query.OrderBy(x => x.Priority),
           IssueSort.Type => desc ? query.OrderByDescending(x => x.Type!.Name) : query.OrderBy(x => x.Type!.Name),
           IssueSort.UpdatedAt => desc ? query.OrderByDescending(x => x.UpdatedAt ?? x.CreatedAt) : query.OrderBy(x => x.UpdatedAt ?? x.CreatedAt),
           _ => throw new ArgumentException($"The sort \"{sort}\" is not valid.", nameof(sort)),

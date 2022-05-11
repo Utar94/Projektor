@@ -12,6 +12,7 @@
       <issue-type-select class="col" :projectId="projectId" v-model="typeId" />
     </b-row>
     <b-row>
+      <priority-select class="col" v-model="priority" />
       <sort-select class="col" :desc="desc" :options="sortOptions" v-model="sort" @desc="desc = $event" />
       <count-select class="col" v-model="count" />
     </b-row>
@@ -22,6 +23,7 @@
             <th scope="col" v-t="'issue.key'" />
             <th scope="col" v-t="'name.label'" />
             <th scope="col" v-t="'issueType.label'" />
+            <th scope="col" v-t="'issue.priority.label'" />
             <th scope="col" v-t="'updatedAt'" />
           </tr>
         </thead>
@@ -32,6 +34,7 @@
             </td>
             <td v-text="item.name" />
             <td v-text="item.type.name" />
+            <td v-text="$t(`issue.priorities.${item.priority}`)" />
             <td v-text="$d(new Date(item.updatedAt || item.createdAt), 'medium')" />
           </tr>
         </tbody>
@@ -45,6 +48,7 @@
 <script>
 import CreateIssueModal from './CreateIssueModal.vue'
 import IssueTypeSelect from './IssueTypeSelect.vue'
+import PrioritySelect from './PrioritySelect.vue'
 import ProjectSelect from './ProjectSelect.vue'
 import { getIssues } from '@/api/issues'
 
@@ -52,6 +56,7 @@ export default {
   components: {
     CreateIssueModal,
     IssueTypeSelect,
+    PrioritySelect,
     ProjectSelect
   },
   data: () => ({
@@ -60,6 +65,7 @@ export default {
     items: [],
     loading: false,
     page: 1,
+    priority: null,
     projectId: null,
     search: null,
     sort: null,
@@ -70,6 +76,7 @@ export default {
     params() {
       return {
         deleted: false,
+        priority: this.priority,
         projectId: this.projectId,
         search: this.search,
         typeId: this.projectId ? this.typeId : null,

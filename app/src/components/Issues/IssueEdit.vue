@@ -14,6 +14,7 @@
             <form-field class="col" id="estimate" label="issue.estimate" :minValue="0" :step="1" type="number" v-model.number="estimate" />
             <form-field class="col" id="score" label="issue.score" :minValue="0" :step="0.1" type="number" v-model.number="score" />
           </b-row>
+          <priority-select required v-model="priority" />
           <form-textarea id="description" label="description.label" placeholder="description.placeholder" v-model="description" />
         </b-form>
       </validation-observer>
@@ -22,9 +23,13 @@
 </template>
 
 <script>
+import PrioritySelect from './PrioritySelect.vue'
 import { getIssue, updateIssue } from '@/api/issues'
 
 export default {
+  components: {
+    PrioritySelect
+  },
   data: () => ({
     description: null,
     dueDate: null,
@@ -32,6 +37,7 @@ export default {
     issue: null,
     loading: false,
     name: null,
+    priority: null,
     score: null
   }),
   computed: {
@@ -41,7 +47,8 @@ export default {
         (this.description ?? '') !== (this.issue.description ?? '') ||
         (this.dueDate ?? '') !== (this.issue.dueDate ?? '') ||
         (this.estimate ?? 0) !== (this.issue.estimate ?? 0) ||
-        (this.score ?? 0) !== (this.issue.score ?? 0)
+        (this.score ?? 0) !== (this.issue.score ?? 0) ||
+        this.priority !== this.issue.priority
       )
     }
   },
@@ -52,6 +59,7 @@ export default {
       this.dueDate = model.dueDate
       this.estimate = model.estimate
       this.name = model.name
+      this.priority = model.priority
       this.score = model.score
     },
     async submit() {
@@ -64,6 +72,7 @@ export default {
               dueDate: this.dueDate,
               estimate: this.estimate,
               name: this.name,
+              priority: this.priority,
               score: this.score
             })
             this.setModel(data)

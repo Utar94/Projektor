@@ -11,6 +11,7 @@ namespace Projektor.Core.Issues.Models
     public string Key { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public int Number { get; set; }
+    public Priority Priority { get; set; }
     public ProjectModel? Project { get; set; }
     public double? Score { get; set; }
     public IssueTypeModel? Type { get; set; }

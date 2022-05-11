@@ -23,6 +23,7 @@ namespace Projektor.Core.Issues.Commands
       issue.DueDate = payload.DueDate;
       issue.Estimate = payload.Estimate;
       issue.Name = payload.Name.Trim();
+      issue.Priority = payload.Priority;
       issue.Score = payload.Score;
 
       await _issueRepository.SaveAsync(issue, cancellationToken);

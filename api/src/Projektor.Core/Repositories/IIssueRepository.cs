@@ -10,6 +10,7 @@ namespace Projektor.Core.Repositories
     Task<PagedList<Issue>> GetPagedAsync(
       Guid userId,
       bool? deleted = null,
+      Priority? priority = null,
       Guid? projectId = null,
       string? search = null,
       Guid? typeId = null,

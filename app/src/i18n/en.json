@@ -26,6 +26,17 @@
     "dueDate": "Due Date",
     "estimate": "Estimate (minutes)",
     "key": "Key",
+    "priorities": {
+      "Critical": "Critical",
+      "High": "High",
+      "Inconsequential": "Inconsequential",
+      "Low": "Low",
+      "Medium": "Medium"
+    },
+    "priority": {
+      "label": "Priority",
+      "placeholder": "Select a priority"
+    },
     "saved": "The issue has been saved.",
     "score": "Score"
   },
@@ -34,6 +45,7 @@
     "sort": {
       "Key": "Key",
       "Name": "Name",
+      "Priority": "Priority",
       "Type": "Type",
       "UpdatedAt": "Updated at"
     },

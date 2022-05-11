@@ -37,6 +37,7 @@ namespace Projektor.Web.Controllers
     [HttpGet]
     public async Task<ActionResult<ListModel<IssueModel>>> GetAsync(
       bool? deleted,
+      Priority? priority,
       Guid? projectId,
       string? search,
       Guid? typeId,
@@ -50,6 +51,7 @@ namespace Projektor.Web.Controllers
       return Ok(await _mediator.Send(new GetIssuesQuery
       {
         Deleted = deleted,
+        Priority = priority,
         ProjectId = projectId,
         Search = search,
         TypeId = typeId,

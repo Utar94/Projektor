@@ -5,6 +5,7 @@
         <project-select required v-model="projectId" />
         <issue-type-select :projectId="projectId" required v-model="typeId" />
         <form-field id="name" label="name.label" :maxLength="100" placeholder="name.placeholder" required v-model="name" />
+        <priority-select required v-model="priority" />
       </b-form>
     </validation-observer>
   </create-modal>
@@ -12,12 +13,14 @@
 
 <script>
 import IssueTypeSelect from './IssueTypeSelect.vue'
+import PrioritySelect from './PrioritySelect.vue'
 import ProjectSelect from './ProjectSelect.vue'
 import { createIssue } from '@/api/issues'
 
 export default {
   components: {
     IssueTypeSelect,
+    PrioritySelect,
     ProjectSelect
   },
   props: {
@@ -29,6 +32,7 @@ export default {
   data: () => ({
     loading: false,
     name: null,
+    priority: 'Medium',
     projectId: null,
     typeId: null
   }),
@@ -43,6 +47,7 @@ export default {
           if (await this.$refs.form.validate()) {
             const { data } = await createIssue({
               name: this.name,
+              priority: this.priority,
               typeId: this.typeId
             })
             this.$router.push({ name: 'IssueEdit', params: { key: data.key } })
